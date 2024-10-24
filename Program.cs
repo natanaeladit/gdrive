@@ -53,8 +53,10 @@ ServiceAccountCredential credential = new ServiceAccountCredential(
 var service = new DriveService(new BaseClientService.Initializer()
 {
     HttpClientInitializer = credential,
-    ApplicationName = "Drive API Sample",
+    ApplicationName = "Drive API Sample"
 });
+
+var fileList = service.Files.List();
 
 Console.WriteLine("Connected!");
 #endregion
@@ -80,7 +82,7 @@ catch (Exception ex)
 {
     Console.WriteLine(ex.Message);
 }
-Task<IUploadProgress> UploadFileAsync(DriveService service)
+async Task<IUploadProgress> UploadFileAsync(DriveService service)
 {
     var name = UploadFileName;
     if (name.LastIndexOf('\\') != -1)
@@ -97,21 +99,7 @@ Task<IUploadProgress> UploadFileAsync(DriveService service)
     insert.ProgressChanged += Upload_ProgressChanged;
     insert.ResponseReceived += Upload_ResponseReceived;
 
-    var task = insert.UploadAsync();
-
-    task.ContinueWith(t =>
-    {
-        // NotOnRanToCompletion - this code will be called if the upload fails
-        Console.WriteLine("Upload Failed. " + t.Exception);
-    }, TaskContinuationOptions.NotOnRanToCompletion);
-    task.ContinueWith(t =>
-    {
-        Console.WriteLine("Closing the stream");
-        uploadStream.Dispose();
-        Console.WriteLine("The stream was closed");
-    });
-
-    return task;
+    return await insert.UploadAsync();
 }
 
 async Task DownloadFileAsync(DriveService service, string url)
